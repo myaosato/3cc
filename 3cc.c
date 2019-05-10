@@ -16,6 +16,8 @@ typedef struct {
 } Token;
 
 Token tokens[100];
+int pos = 0;
+
 
 void error(char *fmt, ...) {
     va_list ap;
@@ -57,6 +59,82 @@ void tokenize(char *p) {
     tokens[i].input = p;
 }
 
+enum {
+    ND_NUM = 256,
+};
+
+typedef struct Node {
+    int ty;
+    struct Node *lhs;
+    struct Node *rhs;
+    int val;
+} Node;
+
+Node *new_node(int ty, Node *lhs, Node *rhs) {
+    Node *node = malloc(sizeof(Node));
+    node->ty = ty;
+    node->lhs = lhs;
+    node->rhs = rhs;
+    return node;
+}
+
+Node *new_node_num(int val) {
+    Node *node = malloc(sizeof(Node));
+    node->ty = ND_NUM;
+    node->val = val;
+    return node;
+}
+
+int consume(int ty) {
+    if (tokens[pos].ty != ty)
+        return 0;
+    pos++;
+    return 1;
+}
+
+Node *term() {
+    if (tokens[pos].ty == TK_NUM)
+        return new_node_num(tokens[pos++].val);
+    error("数値が期待されますが、数値ではありません: %s", tokens[pos].input);
+}
+
+Node *add() {
+    Node *node = term();
+
+    for(;;) {
+        if (consume('+'))
+            node = new_node('+', node, term());
+        else if (consume('-'))
+            node = new_node('-', node, term());
+        else
+            return node;
+    }
+}
+
+void gen(Node* node) {
+    if (node->ty == ND_NUM) {
+        printf("  push %d\n", node->val);
+        return;
+    }
+
+    gen(node->lhs);
+    gen(node->rhs);
+
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+
+    switch (node->ty) {
+    case '+':
+        printf("  add rax, rdi\n");
+        break;
+    case '-':
+        printf("  sub rax, rdi\n");
+        break;
+    }
+
+    printf("  push rax\n");
+}
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr, "引数の個数が正しくありません\n");
@@ -64,39 +142,15 @@ int main(int argc, char **argv) {
     }
 
     tokenize(argv[1]);
+    Node *node = add();
 
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
     printf("main:\n");
 
-    if (tokens[0].ty != TK_NUM)
-        error("最初の項が数ではありません");
-    printf("  mov rax, %d\n", tokens[0].val);
-    
-    int i = 1;
-    
-    while (tokens[i].ty != TK_EOF) {
-        if (tokens[i].ty == '+') {
-            i++;
-            if (tokens[i].ty != TK_NUM)
-                error("予期しないトークンです: %s", tokens[i].input);
-            printf("  add rax, %d\n", tokens[i].val);
-            i++;
-            continue;
-        }
+    gen(node);
 
-        if (tokens[i].ty == '-') {
-            i++;
-            if (tokens[i].ty != TK_NUM)
-                error("予期しないトークンです: %s", tokens[i].input);
-            printf("  sub rax, %d\n", tokens[i].val);
-            i++;
-            continue;
-        }
-
-        error("予期しないトークンです: %s", tokens[i].input);
-    }
-
+    printf("  pop rax\n");
     printf("  ret\n");
     return 0;
 }
