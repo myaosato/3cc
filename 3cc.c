@@ -18,7 +18,6 @@ typedef struct {
 Token tokens[100];
 int pos = 0;
 
-
 void error(char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -35,7 +34,7 @@ void tokenize(char *p) {
             continue;
         }
 
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
             tokens[i].ty = *p;
             tokens[i].input = p;
             i++;
@@ -92,7 +91,16 @@ int consume(int ty) {
     return 1;
 }
 
+Node *add();
+
 Node *term() {
+    if (consume('(')) {
+        Node *node = add();
+        if (!consume(')'))
+            error("括弧の対応が取れません: %s", tokens[pos].input);
+        return node;
+    }
+
     if (tokens[pos].ty == TK_NUM)
         return new_node_num(tokens[pos++].val);
     error("数値が期待されますが、数値ではありません: %s", tokens[pos].input);
