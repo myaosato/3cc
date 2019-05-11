@@ -54,7 +54,7 @@ void tokenize(char *p) {
             continue;
         }
 
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<') {
             tokens[i].ty = *p;
             tokens[i].input = p;
             i++;
@@ -162,14 +162,25 @@ Node *add() {
     }
 }
 
-Node *equality() {
+Node *relational() {
     Node *node = add();
 
     for(;;) {
+        if (consume('<'))
+            node = new_node('<', node, add());
+        else
+            return node;
+    }
+}
+
+Node *equality() {
+    Node *node = relational();
+
+    for(;;) {
         if (consume(TK_EQ))
-            node = new_node(ND_EQ, node, add());
+            node = new_node(ND_EQ, node, relational());
         if (consume(TK_NE))
-            node = new_node(ND_NE, node, add());
+            node = new_node(ND_NE, node, relational());
         else
             return node;
     }
@@ -204,6 +215,11 @@ void gen(Node* node) {
     case '/':
         printf("  mov rdx, 0\n");
         printf("  div rdi\n");
+        break;
+    case '<':
+        printf("  cmp rax, rdi\n");
+        printf("  setl al\n");
+        printf("  movzb rax, al\n");
         break;
     case ND_EQ:
         printf("  cmp rax, rdi\n");
