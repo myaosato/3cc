@@ -9,6 +9,7 @@ enum {
     TK_EQ,
     TK_NE,
     TK_LE,
+    TK_GE,
     TK_EOF,
 };
 
@@ -57,6 +58,15 @@ void tokenize(char *p) {
 
         if (strncmp(p, "<=", 2) == 0) {
             tokens[i].ty = TK_LE;
+            tokens[i].input = p;
+            i++;
+            p++;
+            p++;
+            continue;
+        }
+
+        if (strncmp(p, ">=", 2) == 0) {
+            tokens[i].ty = TK_GE;
             tokens[i].input = p;
             i++;
             p++;
@@ -185,6 +195,8 @@ Node *relational() {
             node = new_node('<', add(), node);
         if (consume(TK_LE))
             node = new_node(ND_LE, node, add());
+        if (consume(TK_GE))
+            node = new_node(ND_LE, add(), node);
         else
             return node;
     }
