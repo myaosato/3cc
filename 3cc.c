@@ -44,7 +44,7 @@ void runtest() {
     expect(__LINE__, 0, (long)vec->data[0]);
     expect(__LINE__, 50, (long)vec->data[50]);
     expect(__LINE__, 99, (long)vec->data[99]);
-    
+
     printf("OK\n");
 }
 
@@ -63,8 +63,8 @@ typedef struct {
     char *input;
 } Token;
 
-Token tokens[100];
-int pos = 0;
+Vector* tokens;
+int pos;
 
 void error(char *fmt, ...) {
     va_list ap;
@@ -74,8 +74,7 @@ void error(char *fmt, ...) {
     exit(1);
 }
 
-void tokenize(char *p) {
-    int i = 0;
+void *tokenize(char *p) {
     while (*p) {
         if (isspace(*p)) {
             p++;
@@ -83,36 +82,40 @@ void tokenize(char *p) {
         }
 
         if (strncmp(p, "==", 2) == 0) {
-            tokens[i].ty = TK_EQ;
-            tokens[i].input = p;
-            i++;
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_EQ;
+            token->input = p;
+            vec_push(tokens, token);
             p++;
             p++;
             continue;
         }
 
         if (strncmp(p, "!=", 2) == 0) {
-            tokens[i].ty = TK_NE;
-            tokens[i].input = p;
-            i++;
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_NE;
+            token->input = p;
+            vec_push(tokens, token);
             p++;
             p++;
             continue;
         }
 
         if (strncmp(p, "<=", 2) == 0) {
-            tokens[i].ty = TK_LE;
-            tokens[i].input = p;
-            i++;
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_LE;
+            token->input = p;
+            vec_push(tokens, token);
             p++;
             p++;
             continue;
         }
 
         if (strncmp(p, ">=", 2) == 0) {
-            tokens[i].ty = TK_GE;
-            tokens[i].input = p;
-            i++;
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_GE;
+            token->input = p;
+            vec_push(tokens, token);
             p++;
             p++;
             continue;
@@ -121,27 +124,30 @@ void tokenize(char *p) {
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
             || *p == '(' || *p == ')'
             || *p == '<' || *p == '>') {
-            tokens[i].ty = *p;
-            tokens[i].input = p;
-            i++;
+            Token *token = malloc(sizeof(Token));
+            token->ty = *p;
+            token->input = p;
+            vec_push(tokens, token);
             p++;
             continue;
         }
 
         if (isdigit(*p)) {
-            tokens[i].ty = TK_NUM;
-            tokens[i].input = p;
-            tokens[i].val = strtol(p, &p, 10);
-            i++;
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_NUM;
+            token->input = p;
+            token->val = strtol(p, &p, 10);
+            vec_push(tokens, token);
             continue;
         }
 
         error("トークナイズできません: %s", p);
         exit(1);
     }
-
-    tokens[i].ty = TK_EOF;
-    tokens[i].input = p;
+    Token *token = malloc(sizeof(Token));
+    token->ty = TK_EOF;
+    token->input = p;
+    vec_push(tokens, token);
 }
 
 enum {
@@ -174,7 +180,7 @@ Node *new_node_num(int val) {
 }
 
 int consume(int ty) {
-    if (tokens[pos].ty != ty)
+    if (((Token*) tokens->data[pos])->ty != ty)
         return 0;
     pos++;
     return 1;
@@ -186,13 +192,13 @@ Node *term() {
     if (consume('(')) {
         Node *node = add();
         if (!consume(')'))
-            error("括弧の対応が取れません: %s", tokens[pos].input);
+            error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
         return node;
     }
 
-    if (tokens[pos].ty == TK_NUM)
-        return new_node_num(tokens[pos++].val);
-    error("数値が期待されますが、数値ではありません: %s", tokens[pos].input);
+    if (((Token*) tokens->data[pos])->ty == TK_NUM)
+        return new_node_num(((Token*) tokens->data[pos++])->val);
+    error("数値が期待されますが、数値ではありません: %s", ((Token*) tokens->data[pos])->input);
 }
 
 Node *unary() {
@@ -248,7 +254,6 @@ Node *relational() {
 
 Node *equality() {
     Node *node = relational();
-
     for(;;) {
         if (consume(TK_EQ))
             node = new_node(ND_EQ, node, relational());
@@ -324,6 +329,9 @@ int main(int argc, char **argv) {
         runtest();
         return 0;
     }
+
+    tokens = new_vector();
+    pos = 0;
 
     tokenize(argv[1]);
     Node *node = parse();
