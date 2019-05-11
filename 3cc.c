@@ -7,6 +7,7 @@
 enum {
     TK_NUM = 256,
     TK_EQ,
+    TK_NE,
     TK_EOF,
 };
 
@@ -44,6 +45,15 @@ void tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "!=", 2) == 0) {
+            tokens[i].ty = TK_NE;
+            tokens[i].input = p;
+            i++;
+            p++;
+            p++;
+            continue;
+        }
+
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
             tokens[i].ty = *p;
             tokens[i].input = p;
@@ -71,6 +81,7 @@ void tokenize(char *p) {
 enum {
     ND_NUM = 256,
     ND_EQ,
+    ND_NE,
 };
 
 typedef struct Node {
@@ -157,6 +168,8 @@ Node *equality() {
     for(;;) {
         if (consume(TK_EQ))
             node = new_node(ND_EQ, node, add());
+        if (consume(TK_NE))
+            node = new_node(ND_NE, node, add());
         else
             return node;
     }
@@ -195,6 +208,11 @@ void gen(Node* node) {
     case ND_EQ:
         printf("  cmp rax, rdi\n");
         printf("  sete al\n");
+        printf("  movzb rax, al\n");
+        break;
+    case ND_NE:
+        printf("  cmp rax, rdi\n");
+        printf("  setne al\n");
         printf("  movzb rax, al\n");
         break;
     }
