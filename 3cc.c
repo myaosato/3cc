@@ -6,6 +6,7 @@
 
 enum {
     TK_NUM = 256,
+    TK_EQ,
     TK_EOF,
 };
 
@@ -30,6 +31,15 @@ void tokenize(char *p) {
     int i = 0;
     while (*p) {
         if (isspace(*p)) {
+            p++;
+            continue;
+        }
+
+        if (strncmp(p, "==", 2) == 0) {
+            tokens[i].ty = TK_EQ;
+            tokens[i].input = p;
+            i++;
+            p++;
             p++;
             continue;
         }
@@ -60,6 +70,7 @@ void tokenize(char *p) {
 
 enum {
     ND_NUM = 256,
+    ND_EQ,
 };
 
 typedef struct Node {
@@ -140,6 +151,21 @@ Node *add() {
     }
 }
 
+Node *equality() {
+    Node *node = add();
+
+    for(;;) {
+        if (consume(TK_EQ))
+            node = new_node(ND_EQ, node, add());
+        else
+            return node;
+    }
+}
+
+Node *parse() {
+    return equality();
+}
+
 void gen(Node* node) {
     if (node->ty == ND_NUM) {
         printf("  push %d\n", node->val);
@@ -166,6 +192,11 @@ void gen(Node* node) {
         printf("  mov rdx, 0\n");
         printf("  div rdi\n");
         break;
+    case ND_EQ:
+        printf("  cmp rax, rdi\n");
+        printf("  sete al\n");
+        printf("  movzb rax, al\n");
+        break;
     }
 
     printf("  push rax\n");
@@ -178,7 +209,7 @@ int main(int argc, char **argv) {
     }
 
     tokenize(argv[1]);
-    Node *node = add();
+    Node *node = parse();
 
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
