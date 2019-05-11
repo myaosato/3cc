@@ -102,10 +102,11 @@ int consume(int ty) {
 }
 
 Node *add();
+Node *equality();
 
 Node *term() {
     if (consume('(')) {
-        Node *node = add();
+        Node *node = equality();
         if (!consume(')'))
             error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
         return node;
