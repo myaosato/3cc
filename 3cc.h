@@ -53,4 +53,4 @@ extern int pos;
 extern Node *code[];
 void parse();
 
-void gen(Node* node);
+void gen_main();
