@@ -1,5 +1,6 @@
 #include "3cc.h"
 
+Node* code[100];
 Vector* tokens;
 int pos;
 
@@ -52,7 +53,8 @@ void *tokenize(char *p) {
 
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
             || *p == '(' || *p == ')'
-            || *p == '<' || *p == '>') {
+            || *p == '<' || *p == '>'
+            || *p == ';') {
             Token *token = malloc(sizeof(Token));
             token->ty = *p;
             token->input = p;
@@ -180,9 +182,29 @@ Node *equality() {
     }
 }
 
-Node *parse(char *codestr) {
+
+Node *expr() {
+    return equality();
+}
+
+Node *stmt() {
+    Node *node = expr();
+    if (!consume(';'))
+        error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
+    return node;
+}
+
+void program() {
+    int i = 0;
+    while (((Token*) tokens->data[pos])->ty != TK_EOF)
+        code[i++] = stmt();
+    code[i] = NULL;
+}
+
+
+void parse(char *codestr) {
     tokens = new_vector();
     tokenize(codestr);
     pos = 0;
-    return equality();
+    program();
 }

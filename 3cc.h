@@ -47,6 +47,7 @@ enum {
 
 extern Vector* tokens;
 extern int pos;
-Node *parse();
+extern Node *code[];
+void parse();
 
 void gen(Node* node);

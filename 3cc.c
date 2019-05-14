@@ -19,15 +19,16 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    Node *node = parse(argv[1]);
+    parse(argv[1]);
 
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
     printf("main:\n");
+    for (int i = 0; code[i]; i++) {
+        gen(code[i]);
+        printf("  pop rax\n");
+    }
 
-    gen(node);
-
-    printf("  pop rax\n");
     printf("  ret\n");
     return 0;
 }
