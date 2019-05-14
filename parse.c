@@ -51,10 +51,20 @@ void *tokenize(char *p) {
             continue;
         }
 
+        if ('a' <= *p && *p <= 'z') {
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_IDENT;
+            token->input = p;
+            vec_push(tokens, token);
+            p++;
+            continue;
+        }
+
+
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
             || *p == '(' || *p == ')'
             || *p == '<' || *p == '>'
-            || *p == ';') {
+            || *p == ';' || *p == '=') {
             Token *token = malloc(sizeof(Token));
             token->ty = *p;
             token->input = p;
@@ -96,6 +106,14 @@ Node *new_node_num(int val) {
     return node;
 }
 
+Node *new_node_ident(char name) {
+    Node *node = malloc(sizeof(Node));
+    node->ty = ND_IDENT;
+    node->name = name;
+    return node;
+}
+
+
 int consume(int ty) {
     if (((Token*) tokens->data[pos])->ty != ty)
         return 0;
@@ -116,6 +134,10 @@ Node *term() {
 
     if (((Token*) tokens->data[pos])->ty == TK_NUM)
         return new_node_num(((Token*) tokens->data[pos++])->val);
+
+    if (((Token*) tokens->data[pos])->ty == TK_IDENT)
+        return new_node_ident(((Token*) tokens->data[pos++])->input[0]);
+
     error("数値が期待されますが、数値ではありません: %s", ((Token*) tokens->data[pos])->input);
 }
 
@@ -182,9 +204,15 @@ Node *equality() {
     }
 }
 
+Node *assign() {
+    Node *node = equality();
+    if (consume('='))
+        node = new_node('=', node, assign());
+    return node;
+}
 
 Node *expr() {
-    return equality();
+    return assign();
 }
 
 Node *stmt() {
