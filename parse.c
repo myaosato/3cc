@@ -4,10 +4,26 @@ Node* code[100];
 Vector* tokens;
 int pos;
 
+int is_alnum(char c) {
+    return (('a' <= c && c <= 'z') ||
+            ('A' <= c && c <= 'Z') ||
+            ('0' <= c && c <= '9') ||
+            c == '_');
+}
+
 void *tokenize(char *p) {
     while (*p) {
         if (isspace(*p)) {
             p++;
+            continue;
+        }
+
+        if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_RETURN;
+            token->input = p;
+            vec_push(tokens, token);
+            p += 6;
             continue;
         }
 
@@ -216,7 +232,17 @@ Node *expr() {
 }
 
 Node *stmt() {
-    Node *node = expr();
+    Node *node;
+
+    if (consume(TK_RETURN)) {
+        node = malloc(sizeof(Node));
+        node->ty = ND_RETURN;
+        node->lhs = expr();
+    } else {
+        node = expr();
+    }
+
+
     if (!consume(';'))
         error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
     return node;
