@@ -46,6 +46,15 @@ void *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_ELSE;
+            token->input = p;
+            vec_push(tokens, token);
+            p += 4;
+            continue;
+        }
+
         if (is_al(p[0])) {
             int token_len = 1;
             while (is_alnum(p[token_len])) {
@@ -184,13 +193,14 @@ Node *term() {
     if (((Token*) tokens->data[pos])->ty == TK_NUM)
         return new_node_num(((Token*) tokens->data[pos++])->val);
 
-    if (((Token*) tokens->data[pos])->ty == TK_IDENT)
+    if (((Token*) tokens->data[pos])->ty == TK_IDENT) {
         if (!map_get(vars, ((Token*) tokens->data[pos])->name)) {
             map_put(vars, ((Token*) tokens->data[pos])->name, new_int(8 * (vars->keys->len + 1)));
         }
         return new_node_ident(((Token*) tokens->data[pos++])->name);
-
-    error("数値が期待されますが、数値ではありません: %s", ((Token*) tokens->data[pos])->input);
+    }
+    
+    error("項が期待されますが、項ではありません: %s", ((Token*) tokens->data[pos])->input);
 }
 
 Node *unary() {
@@ -282,7 +292,16 @@ Node *stmt() {
             node->lhs = expr();
             if (!consume(')'))
                 error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
-            node->rhs = stmt();
+            Node* then = stmt();
+            if (consume(TK_ELSE)) {
+                Node* elseNode = malloc(sizeof(Node));
+                elseNode->ty = ND_ELSE;
+                elseNode->lhs = then;
+                elseNode->rhs = stmt();
+                node->rhs = elseNode;
+            } else {
+                node->rhs = then;
+            }
             return node;
         } else {
             error("条件部の括弧がありません: %s", ((Token*) tokens->data[pos])->input);

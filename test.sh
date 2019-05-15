@@ -57,5 +57,7 @@ try 0 'if (1) return 0;1;'
 try 1 'if (0) return 0;1;'
 try 1 'a = 1;if (a - 1) return 0;1;'
 try 42 'Haskel=7;LISP = 42;if (LISP) return LISP;Haskell;'
+try 0 'a = 1;if (a - 1) 1;else return 0;return 1;'
+try 0 'if (1) 1;else return 1;return 0;'
 
 echo OK
