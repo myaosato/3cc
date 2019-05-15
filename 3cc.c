@@ -15,7 +15,8 @@ int main(int argc, char **argv) {
     }
 
     if (strncmp(argv[1], "-test", 5) == 0) {
-        runtest();
+        test_vec();
+        test_map();
         return 0;
     }
 
