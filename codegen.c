@@ -33,6 +33,14 @@ void gen(Node* node) {
         return;
     }
 
+    if (node->ty == ND_RETURN) {
+        gen(node->lhs);
+        printf("  pop rax\n");
+        printf("  mov rsp, rbp\n");
+        printf("  pop rbp\n");
+        printf("  ret\n");
+        return;
+    }
 
     if (node->ty == '=') {
         gen_lval(node->lhs);
@@ -41,15 +49,6 @@ void gen(Node* node) {
         printf("  pop rax\n");
         printf("  mov [rax], rdi\n");
         printf("  push rdi\n");
-        return;
-    }
-
-    if (node->ty == ND_RETURN) {
-        gen(node->lhs);
-        printf("  pop rax\n");
-        printf("  mov rsp, rbp\n");
-        printf("  pop rbp\n");
-        printf("  ret\n");
         return;
     }
 
