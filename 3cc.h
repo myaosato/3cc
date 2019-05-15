@@ -7,6 +7,12 @@
 void error(char *fmt, ...);
 
 typedef struct {
+    int num;
+} Int;
+
+Int *new_int(int in);
+
+typedef struct {
     void **data;
     int capacity;
     int len;
@@ -29,6 +35,7 @@ void test_map();
 typedef struct {
     int ty;
     int val;
+    char *name;
     char *input;
 } Token;
 
@@ -48,7 +55,7 @@ typedef struct Node {
     struct Node *lhs;
     struct Node *rhs;
     int val;
-    char name;
+    char *name;
 } Node;
 
 enum {
@@ -63,6 +70,7 @@ enum {
 extern Vector* tokens;
 extern int pos;
 extern Node *code[];
+extern Map* vars;
 void parse();
 
 void gen_main();

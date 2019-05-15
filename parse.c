@@ -2,6 +2,7 @@
 
 Node* code[100];
 Vector* tokens;
+Map* vars;
 int pos;
 
 int is_alnum(char c) {
@@ -10,6 +11,13 @@ int is_alnum(char c) {
             ('0' <= c && c <= '9') ||
             c == '_');
 }
+
+int is_al(char c) {
+    return (('a' <= c && c <= 'z') ||
+            ('A' <= c && c <= 'Z') ||
+            c == '_');
+}
+
 
 void *tokenize(char *p) {
     while (*p) {
@@ -24,6 +32,20 @@ void *tokenize(char *p) {
             token->input = p;
             vec_push(tokens, token);
             p += 6;
+            continue;
+        }
+
+        if (is_al(p[0])) {
+            int token_len = 1;
+            while (is_alnum(p[token_len])) {
+                token_len++;
+            }
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_IDENT;
+            token->input = p;
+            token->name = strndup(p, token_len);
+            vec_push(tokens, token);
+            p += token_len;
             continue;
         }
 
@@ -122,7 +144,7 @@ Node *new_node_num(int val) {
     return node;
 }
 
-Node *new_node_ident(char name) {
+Node *new_node_ident(char *name) {
     Node *node = malloc(sizeof(Node));
     node->ty = ND_IDENT;
     node->name = name;
@@ -152,7 +174,10 @@ Node *term() {
         return new_node_num(((Token*) tokens->data[pos++])->val);
 
     if (((Token*) tokens->data[pos])->ty == TK_IDENT)
-        return new_node_ident(((Token*) tokens->data[pos++])->input[0]);
+        if (!map_get(vars, ((Token*) tokens->data[pos])->name)) {
+            map_put(vars, ((Token*) tokens->data[pos])->name, new_int(8 * (vars->keys->len + 1)));
+        }
+        return new_node_ident(((Token*) tokens->data[pos++])->name);
 
     error("数値が期待されますが、数値ではありません: %s", ((Token*) tokens->data[pos])->input);
 }
@@ -259,6 +284,7 @@ void program() {
 void parse(char *codestr) {
     tokens = new_vector();
     tokenize(codestr);
+    vars = new_map();
     pos = 0;
     program();
 }

@@ -1,5 +1,11 @@
 #include "3cc.h"
 
+Int *new_int(int in) {
+    Int *num = malloc(sizeof(Int));
+    num->num = in;
+    return num;
+}
+
 Vector *new_vector() {
     Vector *vec = malloc(sizeof(Vector));
     vec->data = malloc(sizeof(void *) * 16);
@@ -70,3 +76,4 @@ void test_map() {
   map_put(map, "foo", (void *)6);
   expect(__LINE__, 6, (long)map_get(map, "foo"));
 }
+
