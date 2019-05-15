@@ -41,6 +41,18 @@ void gen(Node* node) {
         return;
     }
 
+    if (node->ty == ND_WHILE) {
+        printf(".LbeginWHILE%d:\n", node->nd_ident);
+        gen(node->lhs);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je  .LendWHILE%d\n", node->nd_ident);
+        gen(node->rhs);
+        printf("  jmp  .LbeginWHILE%d\n", node->nd_ident);
+        printf(".LendWHILE%d:\n", node->nd_ident);
+        return;
+    }
+
     if (node->ty == ND_RETURN) {
         gen(node->lhs);
         printf("  pop rax\n");

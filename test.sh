@@ -59,5 +59,8 @@ try 1 'a = 1;if (a - 1) return 0;1;'
 try 42 'Haskel=7;LISP = 42;if (LISP) return LISP;Haskell;'
 try 0 'a = 1;if (a - 1) 1;else return 0;return 1;'
 try 0 'if (1) 1;else return 1;return 0;'
+try 5 'a=0;while (a<5) a = a + 1;a;'
+try 6 'a=0;while (a<=5) a = a + 1;a;'
+try 0 'a=5;while (a) a = a -1;a;'
 
 echo OK

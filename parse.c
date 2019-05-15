@@ -5,6 +5,7 @@ Vector* tokens;
 Map* vars;
 int pos;
 int if_counter = 0;
+int while_counter = 0;
 
 int is_alnum(char c) {
     return (('a' <= c && c <= 'z') ||
@@ -52,6 +53,16 @@ void *tokenize(char *p) {
             token->input = p;
             vec_push(tokens, token);
             p += 4;
+            continue;
+        }
+
+        if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_WHILE;
+            token->input = p;
+            token->tk_ident = while_counter++;
+            vec_push(tokens, token);
+            p += 5;
             continue;
         }
 
@@ -302,6 +313,19 @@ Node *stmt() {
             } else {
                 node->rhs = then;
             }
+            return node;
+        } else {
+            error("条件部の括弧がありません: %s", ((Token*) tokens->data[pos])->input);
+        }
+    } else if (consume(TK_WHILE)) {
+        node = malloc(sizeof(Node));
+        node->ty = ND_WHILE;
+        node->nd_ident = ((Token*) tokens->data[pos - 1])->tk_ident;
+        if (consume('(')) {
+            node->lhs = expr();
+            if (!consume(')'))
+                error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+            node->rhs = stmt();
             return node;
         } else {
             error("条件部の括弧がありません: %s", ((Token*) tokens->data[pos])->input);
