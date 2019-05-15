@@ -4,6 +4,7 @@ Node* code[100];
 Vector* tokens;
 Map* vars;
 int pos;
+int if_counter = 0;
 
 int is_alnum(char c) {
     return (('a' <= c && c <= 'z') ||
@@ -32,6 +33,16 @@ void *tokenize(char *p) {
             token->input = p;
             vec_push(tokens, token);
             p += 6;
+            continue;
+        }
+
+        if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
+            Token *token = malloc(sizeof(Token));
+            token->ty = TK_IF;
+            token->input = p;
+            token->tk_ident = if_counter++;
+            vec_push(tokens, token);
+            p += 2;
             continue;
         }
 
@@ -263,6 +274,19 @@ Node *stmt() {
         node = malloc(sizeof(Node));
         node->ty = ND_RETURN;
         node->lhs = expr();
+    } else if (consume(TK_IF)) {
+        node = malloc(sizeof(Node));
+        node->ty = ND_IF;
+        node->nd_ident = ((Token*) tokens->data[pos - 1])->tk_ident;
+        if (consume('(')) {
+            node->lhs = expr();
+            if (!consume(')'))
+                error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+            node->rhs = stmt();
+            return node;
+        } else {
+            error("条件部の括弧がありません: %s", ((Token*) tokens->data[pos])->input);
+        }
     } else {
         node = expr();
     }

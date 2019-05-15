@@ -53,6 +53,9 @@ try 5 'a = 5;return a;a - 2 == 3;'
 try 5 'a = b = 5;return b;return 3;'
 try 42 'abc = 42;abc;'
 try 84 'c_11 = 42;_lisp=42;return _lisp+c_11;0;'
-
+try 0 'if (1) return 0;1;'
+try 1 'if (0) return 0;1;'
+try 1 'a = 1;if (a - 1) return 0;1;'
+try 42 'Haskel=7;LISP = 42;if (LISP) return LISP;Haskell;'
 
 echo OK

@@ -37,11 +37,13 @@ typedef struct {
     int val;
     char *name;
     char *input;
+    int tk_ident;
 } Token;
 
 enum {
     TK_NUM = 256,
     TK_IDENT,
+    TK_IF,
     TK_RETURN,
     TK_EQ,
     TK_NE,
@@ -56,12 +58,14 @@ typedef struct Node {
     struct Node *rhs;
     int val;
     char *name;
+    int nd_ident;
 } Node;
 
 enum {
     ND_NUM = 256,
     ND_IDENT,
     ND_RETURN,
+    ND_IF,
     ND_EQ,
     ND_NE,
     ND_LE,
@@ -72,5 +76,6 @@ extern int pos;
 extern Node *code[];
 extern Map* vars;
 void parse();
+
 
 void gen_main();

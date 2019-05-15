@@ -23,6 +23,17 @@ void gen(Node* node) {
         return;
     }
 
+    if (node->ty == ND_IF) {
+        gen(node->lhs);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je  .LendIF%d\n", node->nd_ident);
+        gen(node->rhs);
+        printf(".LendIF%d:\n", node->nd_ident);
+        return;
+    }
+
+
     if (node->ty == '=') {
         gen_lval(node->lhs);
         gen(node->rhs);
