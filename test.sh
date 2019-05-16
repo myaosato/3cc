@@ -72,5 +72,8 @@ try 5 'for (a = 0;a < 5;) a = a + 1;a;'
 try 10 'for (a = 10;a < 5;) a = a + 1;a;'
 try 6 'for (a = 0;a < 5;a = a + 2)0;a;'
 try 7 'for (a = 7;a < 5;a = a + 3)0;a;'
+try 0 'a=0;for (;0;) 1;a;'
+try 5 'a=0;for (;a < 5;a = a + 1)0;a;'
+try 5 'a=0;for (a = 0;;a = a + 1)if (a >= 5) return a;0;'
 
 echo OK
