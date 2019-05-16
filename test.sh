@@ -63,5 +63,5 @@ try 5 'a=0;while (a<5) a = a + 1;a;'
 try 6 'a=0;while (a<=5) a = a + 1;a;'
 try 0 'a=5;while (a) a = a -1;a;'
 try 0 'a=0;if (0) 1;a;'
-
+try 0 'a=0;while (0) 1;a;'
 echo OK
