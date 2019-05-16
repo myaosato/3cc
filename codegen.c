@@ -57,6 +57,19 @@ void gen(Node* node) {
         return;
     }
 
+    if (node->ty == ND_FOR) {
+        printf("  push 0\n");
+        // TODO compile init
+        printf(".LbeginFOR%d:\n", node->nd_ident);
+        // TODO compile cond
+        printf("  pop rax\n");
+        gen(node->rhs);
+        // TODO compile update
+        printf("  jmp  .LbeginFOR%d\n", node->nd_ident);
+        printf(".LendFOR%d:\n", node->nd_ident);
+        return;
+    }
+
     if (node->ty == ND_RETURN) {
         gen(node->lhs);
         printf("  pop rax\n");
