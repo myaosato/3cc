@@ -72,7 +72,10 @@ void gen(Node* node) {
         }
         printf("  pop rax\n");
         gen(node->rhs);
-        // TODO compile update
+        if (node->lhs->rhs->rhs) {// compile update
+            gen(node->lhs->rhs->rhs);
+            printf("  pop rax\n");
+        }
         printf("  jmp  .LbeginFOR%d\n", node->nd_ident);
         printf(".LendFOR%d:\n", node->nd_ident);
         return;

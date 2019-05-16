@@ -353,8 +353,11 @@ Node *stmt() {
             if (!consume(';'))
                 error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
         }
-        if (!consume(')'))
-            error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+        if (!consume(')')) { // 更新部
+            condNode->rhs = expr();
+            if (!consume(')'))
+                error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+        }
         node->rhs = stmt();
         return node;
 
