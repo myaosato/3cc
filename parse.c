@@ -332,10 +332,17 @@ Node *stmt() {
         node = malloc(sizeof(Node));
         node->ty = ND_FOR;
         node->nd_ident = ((Token*) tokens->data[pos - 1])->tk_ident;
+        Node* initNode = malloc(sizeof(Node));
+        initNode->ty = ND_INIT;
+        initNode->lhs = NULL;
+        node->lhs = initNode;
         if (!consume('('))
             error("forの括弧がありません: %s", ((Token*) tokens->data[pos])->input);
-        if (!consume(';'))
-            error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
+        if (!consume(';')) { // 初期化節
+            initNode->lhs = expr();
+            if (!consume(';'))
+                error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
+        }
         if (!consume(';'))
             error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
         if (!consume(')'))
