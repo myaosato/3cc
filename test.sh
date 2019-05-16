@@ -68,5 +68,7 @@ try 5 'a=0;for (;;) if (a < 5) a = a + 1;else return a;0;'
 try 6 'a=0;for (;;) if (a > 5) return a;else a = a+1;0;'
 try 5 'for (a=0;;) if (a < 5) a = a + 1;else return a;0;'
 try 10 'for (a=10;;) if (a < 5) a = a + 1;else return a;'
+try 5 'for (a = 0;a < 5;) a = a + 1;a;'
+try 10 'for (a = 10;a < 5;) a = a + 1;a;'
 
 echo OK

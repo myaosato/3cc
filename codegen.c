@@ -59,12 +59,17 @@ void gen(Node* node) {
 
     if (node->ty == ND_FOR) {
         printf("  push 0\n");
-        if (node->lhs->lhs) {
+        if (node->lhs->lhs) {// compile init
             gen(node->lhs->lhs);
             printf("  pop rax\n");
         }
         printf(".LbeginFOR%d:\n", node->nd_ident);
-        // TODO compile cond
+        if (node->lhs->rhs->lhs) {// compile cond
+            gen(node->lhs->rhs->lhs);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je  .LendFOR%d\n", node->nd_ident);
+        }
         printf("  pop rax\n");
         gen(node->rhs);
         // TODO compile update

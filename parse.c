@@ -335,6 +335,11 @@ Node *stmt() {
         Node* initNode = malloc(sizeof(Node));
         initNode->ty = ND_INIT;
         initNode->lhs = NULL;
+        Node* condNode = malloc(sizeof(Node));
+        condNode->ty = ND_COND;
+        condNode->lhs = NULL;
+        condNode->rhs = NULL;
+        initNode->rhs = condNode;
         node->lhs = initNode;
         if (!consume('('))
             error("forの括弧がありません: %s", ((Token*) tokens->data[pos])->input);
@@ -343,8 +348,11 @@ Node *stmt() {
             if (!consume(';'))
                 error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
         }
-        if (!consume(';'))
-            error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
+        if (!consume(';')) { // 条件部
+            condNode->lhs = expr();
+            if (!consume(';'))
+                error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
+        }
         if (!consume(')'))
             error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
         node->rhs = stmt();
