@@ -23,6 +23,12 @@ void gen(Node* node) {
         return;
     }
 
+    if (node->ty == ND_FUNCALL) {
+        printf("  call %s\n", node->name);
+        printf("  push rax\n");
+        return;
+    }
+
     if (node->ty == ND_IF) {
         gen(node->lhs);
         printf("  pop rax\n");

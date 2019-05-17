@@ -79,4 +79,10 @@ try 5 'a=0;while (1) {if (a < 5) a = a + 1;else return a;}'
 try 42 '{{42;}}'
 try 10 'a=0;b = 0;c = 1;while (c) {if (a < 5) {a = a + 1;b = b + 2;} else {c = 0;}}b;'
 
+# funcall test
+gcc -c -o printok.o test/printok.c
+./3cc "printok();" > tmp.s
+gcc -o tmp tmp.s printok.o
+./tmp
+
 echo OK

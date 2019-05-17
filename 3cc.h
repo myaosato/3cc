@@ -76,6 +76,7 @@ enum {
     ND_INIT,
     ND_COND,
     ND_BLOCK,
+    ND_FUNCALL,
     ND_EQ,
     ND_NE,
     ND_LE,

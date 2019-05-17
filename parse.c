@@ -194,6 +194,13 @@ Node *new_node_ident(char *name) {
     return node;
 }
 
+Node *new_node_funcall(char *name) {
+    Node *node = malloc(sizeof(Node));
+    node->ty = ND_FUNCALL;
+    node->name = name;
+    return node;
+}
+
 
 int consume(int ty) {
     if (((Token*) tokens->data[pos])->ty != ty)
@@ -216,8 +223,16 @@ Node *term() {
     if (((Token*) tokens->data[pos])->ty == TK_NUM)
         return new_node_num(((Token*) tokens->data[pos++])->val);
 
-    if (((Token*) tokens->data[pos])->ty == TK_IDENT) {
-        if (!map_get(vars, ((Token*) tokens->data[pos])->name)) {
+    if (((Token*) tokens->data[pos])->ty == TK_IDENT) {        
+        if (((Token*) tokens->data[pos + 1])->ty == '(') { // funcall
+            if (((Token*) tokens->data[pos + 2])->ty == ')') {
+                int fpos = pos;
+                pos = pos + 3;
+                return new_node_funcall(((Token*) tokens->data[fpos])->name);
+            } else {
+                error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+            }
+        } else if (!map_get(vars, ((Token*) tokens->data[pos])->name)) { // var
             map_put(vars, ((Token*) tokens->data[pos])->name, new_int(8 * (vars->keys->len + 1)));
         }
         return new_node_ident(((Token*) tokens->data[pos++])->name);
