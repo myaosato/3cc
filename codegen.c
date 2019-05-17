@@ -168,7 +168,9 @@ void gen_main() {
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
     printf("  sub rsp, %d\n", vars->keys->len * 8);
-
+    if (vars->keys->len % 2) {
+        printf("  push 0\n");
+    }
 
     for (int i = 0; code[i]; i++) {
         gen(code[i]);
