@@ -62,6 +62,7 @@ typedef struct Node {
     int val;
     char *name;
     int nd_ident;
+    Vector *stmts;
 } Node;
 
 enum {
@@ -74,6 +75,7 @@ enum {
     ND_FOR,
     ND_INIT,
     ND_COND,
+    ND_BLOCK,
     ND_EQ,
     ND_NE,
     ND_LE,

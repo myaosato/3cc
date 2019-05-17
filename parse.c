@@ -144,7 +144,8 @@ void *tokenize(char *p) {
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
             || *p == '(' || *p == ')'
             || *p == '<' || *p == '>'
-            || *p == ';' || *p == '=') {
+            || *p == ';' || *p == '='
+            || *p == '{' || *p == '}') {
             Token *token = malloc(sizeof(Token));
             token->ty = *p;
             token->input = p;
@@ -302,7 +303,18 @@ Node *expr() {
 Node *stmt() {
     Node *node;
 
-    if (consume(TK_RETURN)) {
+    if (consume('{')) {
+        node = malloc(sizeof(Node));
+        node->ty = ND_BLOCK;
+        Vector *stmts = new_vector();
+        while (!consume('}')) {
+            if (consume(TK_EOF))
+                error("ブロックの括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+            vec_push(stmts, stmt());
+        }
+        node->stmts = stmts;
+        return node;
+    } else if (consume(TK_RETURN)) {
         node = malloc(sizeof(Node));
         node->ty = ND_RETURN;
         node->lhs = expr();
@@ -360,7 +372,6 @@ Node *stmt() {
         }
         node->rhs = stmt();
         return node;
-
     } else if (consume(TK_WHILE)) {
         node = malloc(sizeof(Node));
         node->ty = ND_WHILE;
@@ -377,7 +388,6 @@ Node *stmt() {
     } else {
         node = expr();
     }
-
 
     if (!consume(';'))
         error("';'ではないトークンです: %s", ((Token*) tokens->data[pos])->input);
