@@ -78,11 +78,17 @@ try 5 'a=0;for (a = 0;;a = a + 1)if (a >= 5) return a;0;'
 try 5 'a=0;while (1) {if (a < 5) a = a + 1;else return a;}'
 try 42 '{{42;}}'
 try 10 'a=0;b = 0;c = 1;while (c) {if (a < 5) {a = a + 1;b = b + 2;} else {c = 0;}}b;'
+echo OK
 
 # funcall test
+echo "expected: OK"
 gcc -c -o printok.o test/printok.c
-./3cc "printok();" > tmp.s
+./3cc "printok();0;" > tmp.s
 gcc -o tmp tmp.s printok.o
 ./tmp
 
-echo OK
+echo "expected: 42"
+gcc -c -o printadd.o test/printadd.c
+./3cc "printadd(12, 30);0;" > tmp.s
+gcc -o tmp tmp.s printadd.o
+./tmp

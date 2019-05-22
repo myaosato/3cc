@@ -145,7 +145,8 @@ void *tokenize(char *p) {
             || *p == '(' || *p == ')'
             || *p == '<' || *p == '>'
             || *p == ';' || *p == '='
-            || *p == '{' || *p == '}') {
+            || *p == '{' || *p == '}'
+            || *p == ',') {
             Token *token = malloc(sizeof(Token));
             token->ty = *p;
             token->input = p;
@@ -194,10 +195,11 @@ Node *new_node_ident(char *name) {
     return node;
 }
 
-Node *new_node_funcall(char *name) {
+Node *new_node_funcall(char *name, Vector* params) {
     Node *node = malloc(sizeof(Node));
     node->ty = ND_FUNCALL;
     node->name = name;
+    node->params = params;
     return node;
 }
 
@@ -211,6 +213,7 @@ int consume(int ty) {
 
 Node *add();
 Node *equality();
+Node *expr();
 
 Node *term() {
     if (consume('(')) {
@@ -223,19 +226,29 @@ Node *term() {
     if (((Token*) tokens->data[pos])->ty == TK_NUM)
         return new_node_num(((Token*) tokens->data[pos++])->val);
 
-    if (((Token*) tokens->data[pos])->ty == TK_IDENT) {        
-        if (((Token*) tokens->data[pos + 1])->ty == '(') { // funcall
-            if (((Token*) tokens->data[pos + 2])->ty == ')') {
-                int fpos = pos;
-                pos = pos + 3;
-                return new_node_funcall(((Token*) tokens->data[fpos])->name);
-            } else {
-                error("括弧の対応が取れません: %s", ((Token*) tokens->data[pos])->input);
+    if (((Token*) tokens->data[pos])->ty == TK_IDENT) {
+        char* name = ((Token*) tokens->data[pos++])->name;
+        if (consume('(')) { // funcall
+            Vector* params = new_vector();
+            for (int pind = 0; pind < 6; pind++) {
+                if (consume(')')) {
+                    return new_node_funcall(name, params);
+                } else {
+                    vec_push(params, expr());
+                    if (consume(')'))
+                        return new_node_funcall(name, params);
+                }
+                if (pind == 6)
+                    error("7つ以上の引数には未対応です: %s", ((Token*) tokens->data[pos])->input);
+                if (!consume(','))
+                    error("カンマがありません: %s", ((Token*) tokens->data[pos])->input);
             }
-        } else if (!map_get(vars, ((Token*) tokens->data[pos])->name)) { // var
-            map_put(vars, ((Token*) tokens->data[pos])->name, new_int(8 * (vars->keys->len + 1)));
+        } else { // var
+            if (!map_get(vars, name)) {
+                map_put(vars, name, new_int(8 * (vars->keys->len + 1)));
+            }
+            return new_node_ident(name);
         }
-        return new_node_ident(((Token*) tokens->data[pos++])->name);
     }
     
     error("項が期待されますが、項ではありません: %s", ((Token*) tokens->data[pos])->input);

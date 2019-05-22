@@ -24,6 +24,30 @@ void gen(Node* node) {
     }
 
     if (node->ty == ND_FUNCALL) {
+        if (node->params->len >= 1) {
+            gen(node->params->data[0]);
+            printf("  pop rdi\n");
+        }
+        if (node->params->len >= 2) {
+            gen(node->params->data[1]);
+            printf("  pop rsi\n");
+        }
+        if (node->params->len >= 3) {
+            gen(node->params->data[2]);
+            printf("  pop rdx\n");
+        }
+        if (node->params->len >= 4) {
+            gen(node->params->data[3]);
+            printf("  pop rcx\n");
+        }
+        if (node->params->len >= 5) {
+            gen(node->params->data[4]);
+            printf("  pop r8\n");
+        }
+        if (node->params->len >= 6) {
+            gen(node->params->data[5]);
+            printf("  pop r9\n");
+        }
         printf("  call %s\n", node->name);
         printf("  push rax\n");
         return;

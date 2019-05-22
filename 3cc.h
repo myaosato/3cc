@@ -63,6 +63,7 @@ typedef struct Node {
     char *name;
     int nd_ident;
     Vector *stmts;
+    Vector *params;
 } Node;
 
 enum {
